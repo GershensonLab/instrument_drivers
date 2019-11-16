@@ -185,7 +185,8 @@ class AWGChannel(InstrumentChannel):
                            get_cmd='FGEN:CHANnel{}:DCLevel?'.format(channel),
                            set_cmd='FGEN:CHANnel{}:DCLevel {{}}'.format(channel),
                            unit='V',
-                           vals=vals.Numbers(-0.25, 0.25),
+#                           vals=vals.Numbers(-0.25, 0.25),
+                           vals=vals.Numbers(-2, 2), #wsLu set for DC measurement
                            get_parser=float)
 
         self.add_parameter('fgen_signalpath',

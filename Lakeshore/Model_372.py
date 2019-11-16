@@ -238,6 +238,8 @@ class Model_372(LakeshoreBase):
     def __init__(self, name: str, address: str, **kwargs) -> None:
         super().__init__(name, address, **kwargs)
         self.sample_heater = Output_372(self, 'sample_heater', 0)
+        self.sample_heater = Output_372(self, 'sample_heater', '')
+
         self.warmup_heater = Output_372(self, 'warmup_heater', 1)
         self.analog_heater = Output_372(self, 'analog_heater', 2)
         
@@ -250,10 +252,13 @@ if __name__ == "__main__":
 #        LS370 = Model_372(name = 'LS370 input Ch', address = 'GPIB::12::INSTR', terminator='\n')
 #    
 #        print( LS370.ch08.temperature.get())
-    LS370 = Model_372(name = 'LS370 input Ch', address = 'GPIB::12::INSTR', terminator='\n')
+#    LS370 = Model_372(name = 'LS370 input Ch', address = 'GPIB::12::INSTR', terminator='\n')
 #    print( LS370.ch08.temperature.get())
     
 #    
 #    print(LS370.write('*RST'))
     print(LS370.ch08.temperature.get())
-    print(LS370.ch08._channel)
+
+
+#    LS370OPT = Output_372(address = 'GPIB::12::INSTR', terminator='\n')
+#    print(LS370OPT.Output_372.ploarity.get())

@@ -5,8 +5,14 @@ Created on Mon Apr  8 15:27:03 2019
 @author: measPC
 """
 
-from .AWG70000A import AWG70000A
+import pyvisa
+import time
+import logging
+import numpy as np
+import struct
+from qcodes import VisaInstrument, validators as vals
 
+from .AWG70000A import AWG70000A
 
 class AWG5204(AWG70000A):
     """
@@ -24,3 +30,17 @@ class AWG5204(AWG70000A):
 
         super().__init__(name, address, num_channels=4,
                          timeout=timeout, **kwargs)
+    def init(self):
+        lines = ['*RST;',
+                 'INST:MODE FGEN;',
+                 'FGEN:CHAN1:TYPE DC;',
+                 'FGEN:CHAN1:PATH DCHV;',
+                 'FGEN:CHAN1:DCL 0;',
+                 'OUTP1:STAT ON;']
+
+        for i,l in enumerate(lines):
+            self.write_raw(l)
+            if i <= 2:
+                time.sleep(12)
+            else:
+                time.sleep(2)

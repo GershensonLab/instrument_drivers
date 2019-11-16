@@ -112,8 +112,11 @@ class BaseOutput(InstrumentChannel):
                                      '`input_channel` parameter)',
                            vals=vals.Numbers(0, 400),
                            get_parser=float,
-                           set_cmd=f'SETP {output_index}, {{}}',
-                           get_cmd=f'SETP? {output_index}')
+#                           set_cmd=f'SETP {output_index}, {{}}',
+#Modify the GPIB cmd for LS370
+                           set_cmd='SETP {}',
+#                           get_cmd=f'SETP? {output_index}')
+                           get_cmd='SETP?')
 
         # Additional non-Visa parameters
 
