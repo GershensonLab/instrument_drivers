@@ -322,7 +322,8 @@ class BaseSensorChannel(InstrumentChannel):
         # Add the various channel parameters
 
         self.add_parameter('temperature',
-                           get_cmd='RDGK? {}'.format(self._channel),
+                           get_cmd='RDGK? {}\n\r'.format(self._channel),
+#                           get_cmd='RDGR? {}\n\r'.format(self._channel),
                            get_parser=float,
                            label='Temperature',
                            unit='K')
