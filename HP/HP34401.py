@@ -33,8 +33,13 @@ class HP34401(VisaInstrument):
             self.write_raw('INP:IMP:AUTO OFF\n')
         time.sleep(0.2)
 
-        resodic = { 'slow 4' : ['*CLS\n*RST\n',
-                                'CONF:VOLT:DC 1, 1E-4\n',
+        resodic = { 'fast 4' : ['*CLS\n*RST\n',
+                                'CONF:VOLT:DC 10, 1E-4\n',
+                                'VOLT:DC:NPLC 0.02\n',
+                                'VOLT:RANG:AUTO ON\n'],
+        
+                    'slow 4' : ['*CLS\n*RST\n',
+                                'CONF:VOLT:DC 10, 1E-4\n',
                                 'VOLT:DC:NPLC 1\n',
                                 'VOLT:RANG:AUTO ON\n'],
         
