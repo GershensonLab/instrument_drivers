@@ -23,7 +23,7 @@ class Keithley_6220(VisaInstrument):
                    unit = 'A',
                    get_cmd = None,
                    set_cmd='SOUR:CURR:AMPL '+'{}',
-                   vals=vals.Numbers(-1e-6, 1e-6),
+                   vals=vals.Numbers(-10e-6, 10e-6),
                    set_parser=float)
 
     def init(self):
