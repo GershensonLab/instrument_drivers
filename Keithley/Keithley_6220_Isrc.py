@@ -12,11 +12,26 @@ import numpy as np
 import struct
 from qcodes import VisaInstrument, validators as vals
 
-class Keithley_6220(VisaInstrument):
+class Keithley_6220_Isrc(VisaInstrument):
     
-    def __init__(self, name, address,  **kw):
+    def __init__(self, name, address,  Rsh, Rb, Vmeter, **kw):
+            """
+            child of KE6220 with R-divider and corrected I
+            Args:
+                Vmeter : device used for meas V across jj
+                Rsh : shunt resistor across the source
+                Rb : biasing resistor in series with jj
+            """
 
             super().__init__(name, address, **kw)
+            
+            
+            self.Vmeter = Vmeter
+            self.Rsh = Rsh
+            self.Rb = Rb 
+            
+
+
     
             self.add_parameter('I',
                    label='Current',
@@ -24,8 +39,8 @@ class Keithley_6220(VisaInstrument):
                    get_cmd = 'SOUR:CURR?',
                    set_cmd = 'SOUR:CURR:AMPL '+'{}',
                    vals=vals.Numbers(-10e-6, 10e-6),
-                   set_parser=float,
-                   get_parser=float)
+                   set_parser = self.set_I,
+                   get_parser = self.get_I)
             
             self.add_parameter('Irange',
                    label='Current',
@@ -49,7 +64,41 @@ class Keithley_6220(VisaInstrument):
             time.sleep(0.2)
             
     def set_R_Attn( self, R_bias, Attn ):
+        print('set R Attn is not implemented')
         pass
+
+
+
+
+    def set_I(self, I):
+        
+        I = float(I)
+        
+        r = self.Rsh
+        R = self.Rb
+       
+        return I*(R+r)/r
+    # Ideally R should be replaced with R+R_DUT
+    # For example, if R_DUT = R = 100Mohm and r = 1Mohm, 
+    # for 25pA flowing through DUT, we asked for (from set_I) 
+    # I = 25pA*101 = 2.525nA
+            
+    def get_I(self, I):
+        
+        ib = float(I)
+        
+        Voff = self.Vmeter.Voff
+        v = self.Vmeter.V.get() - Voff
+        
+
+        r = self.Rsh
+        R = self.Rb
+        
+        
+        return (ib*r - v)/(R+r)
+    # if Ib = 2.525nA, get_I received 
+    # (2.525nA*1Mohm - v)/101Mohm
+
 
 ##Testing our codes
 #from qcodes.instrument.base import Instrument

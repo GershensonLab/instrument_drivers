@@ -28,10 +28,26 @@ class HP34401_DL1201(HP34401):
                    get_cmd='READ?\n',
                    set_cmd = None,
                    get_parser=self.V_to_Vdut)
+            
+            
+            self.meas_Voff()
+            self.V.meas_Voff = self.meas_Voff
 
     def set_Gain(self, Gain):  
         self._Gain = Gain
         self.V_to_Vraw = lambda V: V/self._Gain
+        
+    def meas_Voff(self):    
+        
+        N = 10
+        v = 0
+        for i in range(10):
+            v += self.V.get()
+        Voff = v/N
+        
+        self.Voff = Voff
+        self.V.Voff = Voff
+        
 #        self.I.vals = vals.Numbers(1,1000)
           
 ##Testing our codes

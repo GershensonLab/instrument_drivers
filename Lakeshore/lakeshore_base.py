@@ -101,8 +101,10 @@ class BaseOutput(InstrumentChannel):
                                      'An output in `Monitor Out` mode is '
                                      'always on.',
                            val_mapping=self.RANGES,
-                           set_cmd=f'RANGE {output_index}, {{}}',
-                           get_cmd=f'RANGE? {output_index}')
+                           set_cmd= 'HTRRNG {}',
+                           get_cmd= 'HTRRNG?')
+#                           set_cmd=f'RANGE {output_index}, {{}}',
+#                           get_cmd=f'RANGE? {output_index}')
 
         self.add_parameter('setpoint',
                            label='Setpoint value (in sensor units)',
