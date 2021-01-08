@@ -22,14 +22,16 @@ class AWG3252_Isrc(Tektronix_AWG3252):
             self._Attn = Attn
             self._R_bias = R_bias
             self.I_to_V = lambda i: i*self._R_bias*self._Attn
+            self.V_to_I = lambda v: v/self._R_bias/self._Attn
             
             self.add_parameter('I',
                    label='Current',
                    unit = 'A',
-                   get_cmd = None,
-                   set_cmd= self.V.set,
+                   get_cmd = self.V.get,
+                   set_cmd = self.V.set,
                    vals=vals.Numbers(-4/self._R_bias/self._Attn, 4/self._R_bias/self._Attn),
-                   set_parser= self.I_to_V)
+                   set_parser= self.I_to_V,
+                   get_parser= self.V_to_I)
 
     def set_R_Attn(self, R_bias, Attn):  
         self._Attn = Attn
