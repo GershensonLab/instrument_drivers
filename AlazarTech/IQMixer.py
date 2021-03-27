@@ -24,27 +24,22 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-def fff():
-    return 3
 
 class IQMixer(Instrument):
     """
-    some constnats here
-    
+    Class containing all ingredients (two signal gerenrtors, attenuator, digitizing card) for measuring S21 parameter by ATS
+    in heterodyne regime
+    Parameters:
+        ats : ATS_Alazar digitizing card Instrument
+        sgen1 : probe tone generator Instrument
+        sgen2 : heterodyne for downconverion Instrument
+        aeroflex : attenuator Instrument
 
     """
         
     def __init__(self, name: str, ats,  sgen1 , sgen2, aeroflex, **kwargs ):
                  
-                 
-#                 dll_path: str=None, alt_dll_path: str=None, **kwargs) -> None:
         super().__init__(name, **kwargs)
-        
-
-
-
-#        self.N_avg =  4000
-        
         self.sgen1 = sgen1
         self.sgen2 = sgen2
         
@@ -52,39 +47,18 @@ class IQMixer(Instrument):
         self.aeroflex_CH_map = {'In' : 'CH1', 'Out': 'CH2'}
         
         self.ats = ats
-
-
-#        self.N_pts =  ats.samples_per_record
-#
-#        self.delta_frequency = 3.0303e7 
-#        
         self.delta_frequency = ats.delta_frequency
-#        
-#        t = np.arange(8192*4000)
-#        s = self.ats.sample_rate.get()
-#
-#        ref_sin = np.int8(  127 * np.sin( 2*np.pi*self.delta_frequency*t/s ) ) #np.cos(2*np.pi*self.delta_frequency*t/s)
-#        ref_cos = np.int8(  127 * np.cos( 2*np.pi*self.delta_frequency*t/s ) ) #np.sin(2*np.pi*self.delta_frequency*t/s) 
-#        
-#        self.ref = np.array ([ref_sin, ref_cos, ref_sin, ref_cos])
-        
+
         self.rangeCHA = self.ats.channel_range1.get()
         self.rangeCHB = self.ats.channel_range2.get()
-        
-        
-#        self.S21_ = S21_ampl_phase(ats)  
-#        self.S21_.N_pts = self.N_pts
-#        self.S21_.delta_frequency = self.delta_frequency
-        
-        
+
         self.add_parameter(name='frequency',        
                            label='fprobe',
                            unit='Hz',
                            get_cmd=None,     # get freq in MHz
-                           set_cmd = self.set_IQfrequency , #set greq in range F1 in GHz
+                           set_cmd = self.set_IQfrequency , #set freq in range F1 in GHz
                            vals=Numbers(min_value=1e3,
                                         max_value=40e9))
-
 
         self.add_parameter(name='S21',        
                            label='S21',
@@ -97,7 +71,6 @@ class IQMixer(Instrument):
                            unit='V',
                    get_cmd =  self.get_S21ampl,     
                    set_cmd = None) 
-
 
         self.add_parameter(name='S21_phase',        
                    label='S21 phase',
@@ -117,7 +90,6 @@ class IQMixer(Instrument):
                            unit='V',
                    get_cmd =  self.get_S21Q,     
                    set_cmd = None) 
-                
 
         for io, ch in self.aeroflex_CH_map.items():
             self.add_parameter('att{}'.format(io),
@@ -128,9 +100,7 @@ class IQMixer(Instrument):
                            set_cmd= getattr(self.aeroflex,
                                             'attenuation{}'.format(ch)).set,     # 
                            vals=vals.Enum(*np.arange(0, 60.1, 2).tolist() ))
-                
- 
-        
+
     def set_IQfrequency(self, fr):
         
         self.sgen1.frequency.set(fr)
@@ -151,54 +121,19 @@ class IQMixer(Instrument):
         if ch == 'B':
 
             ax.plot(data[N_pts:], 'x-')
-        
-#        ax.plot(self.ats.ref_IQ[0], ':')
-#        ax.plot(self.ats.ref_IQ[1], ':')
-
-#        ax.axhline(y=np.mean(data[:N_pts]), color='k', linestyle='--')
-#        ax.axhline(y=127.5, color='r', linestyle='-')
-#        
-#        print('I_A = ', np.sum( self.ats.ref_IQ[0]*data[:N_pts] )   )
-#        print('Q_A = ', np.sum( self.ats.ref_IQ[1]*data[:N_pts] )   )
-#
-#
-#        print('I_B = ', np.sum(self.ats.ref_IQ[0]*data[N_pts:])   )
-#        print('Q_B = ', np.sum(self.ats.ref_IQ[1]*data[N_pts:])   )        
         return data
-
-
-
-#    def get_avg_TD(self, N_pts, N_w, N_avg):
-#        
-#        ats = self.ats
-#        
-#        N_pts_tot = N_pts*N_w
-#        
-#        with ats.get_prepared(N_pts = N_pts_tot, N_avg = 1):
-#
-#         ats.start_capturing()
-#         data = ats.get_averaged()
-
-    
-        
-    
 
     def calc_IQ_verbose(self, data,  N_pts = None, N_w = 1):
         
                                       # data - [chA, chB]  
         ats = self.ats
-        
-        
-
-        
         if N_pts is None:
             N_pts =  int( len(data) / 2)  
             
         self.N_pts_w = N_pts #points per window
         
         data2 = np.tile(data , (1,2) ) #[[chA, chB, chA, chB]] 
-      
-        
+
         print ('tile  ',data2)
         fig, ax = plt.subplots()        
         ax.plot(data2[0,:])
@@ -206,19 +141,9 @@ class IQMixer(Instrument):
         data3 = np.reshape(data2, (4,N_w, N_pts )) #[ [chA_0],[chA_1].. [chB_0],[chB_1].., [chA_0],[chA_1].. [chB_0],[chB_1]..]
         
         print ('rehape tile', data3)
-        
-        
+
         fig, ax = plt.subplots()        
-        
-
-        
-
-        
-        
-
-        
         ref = np.reshape(ats.ref_IQ, (4,N_w, N_pts ) )
-
 
         print ( 'ref  ', ref )
 
@@ -226,9 +151,7 @@ class IQMixer(Instrument):
             ax.plot(data3 [k,0,:], c = 'C{}'.format(k))
             ax.plot(ref [k,0,:] , c = 'C{}'.format(k))        
 
-        
         data_prod = data3 * ref
-        
 
         fig, ax = plt.subplots()        
         ax.plot(data_prod[0,0,:])
@@ -236,27 +159,15 @@ class IQMixer(Instrument):
         print ('after product  ',  data_prod )
 
         dataIQ = np.sum( data_prod, axis = 2 )
-        
-
 
         print ('after summ',  dataIQ )
 
-        
         out  = dataIQ# np.transpose( np.reshape(dataIQ, (4, N_w) ))
-        
-        
-#        print(out)
-        
-        
         I_CHA, Q_CHB , Q_CHA, I_CHB = dataIQ
         
         print('ICHA, QCHA',  I_CHA,  Q_CHA)
-        
-        
         print( 'np.abs  ',    np.absolute (I_CHA + 1j*Q_CHA) )
-        
-        
-            
+
         return out #[[I_a0, Q_b0,Q_a0, I_b0], [I_a1, Q_b1,Q_a1, I_b1] ...] 
         
 
@@ -273,37 +184,28 @@ class IQMixer(Instrument):
         
         data2 = np.tile(data, (1,2) ) #[chA, chB, chA, chB] 
         data3 = np.reshape(data2, (4,N_w, N_pts )) #[ [chA_0],[chA_1].. [chB_0],[chB_1].., [chA_0],[chA_1].. [chB_0],[chB_1]..]
-        
-        
+
         ref = np.reshape(ats.ref_IQ, (4, N_w, N_pts ) )
         
         dataIQ = np.sum( data3 * ref, axis = 2 ) 
         
         out  = dataIQ# np.transpose( np.reshape(dataIQ, (4, N_w) ))
-        
 
-
-        
-            
         return out #[[I_a0, Q_b0,Q_a0, I_b0], [I_a1, Q_b1,Q_a1, I_b1] ...] 
 
     def norm(self):
         
         rA = self.rangeCHA
         rB = self.rangeCHB
-        
-        
+
         norm = np.array([rA, rB, rA, rB ]) / 128**2 / self.N_pts_w
         return norm
     
 
     def calcS21_fromIQ(self, I_CHA, Q_CHB , Q_CHA, I_CHB):
-        
 
         amplitude_CHA = np.absolute (I_CHA + 1j*Q_CHA)
         phase_CHA = np.angle (I_CHA + 1j*Q_CHA)
-    
-#        amplitude_CHB = np.absolute (I_CHB + 1j*Q_CHB)
         phase_CHB = np.angle (I_CHB + 1j*Q_CHB)
     
         ampl = 1.0*amplitude_CHA  # coeff 1.25 is taken from calibration
@@ -311,28 +213,15 @@ class IQMixer(Instrument):
         
         return ampl, phase
 
-        
-    
     def get_S21( self ):
-        
-
-
         data = self.ats.get_averaged()
-        
         rawIQ = np.mean(self.calc_IQ( data ) , axis = 1)
-        
 
-        
         I_CHA, Q_CHB , Q_CHA, I_CHB  =  rawIQ * self.norm()
-        
-       
         ampl, phase = self.calcS21_fromIQ( I_CHA, Q_CHB , Q_CHA, I_CHB )
         
         self.S21.ampl = ampl 
         self.S21.phase =  phase
-
-
-        
 
         return self.S21
     
@@ -340,13 +229,10 @@ class IQMixer(Instrument):
 
         return self.get_S21().ampl
 
-    
     def get_S21phase(self ):  
         return self.get_S21().phase
-    
-    
+
     def get_S21I( self ): 
-        
         S21 = self.get_S21()
 
         return S21.ampl * np.sin( S21.phase )
@@ -357,14 +243,7 @@ class IQMixer(Instrument):
         S21 = self.get_S21()
 
         return S21.ampl * np.cos( S21.phase )
-    
- 
-    
-    
-        
-    
-    
-    
+
 #    @contextmanager    
 #    def get_prepared_TD(self, N_windows,  windowsize = 512):
 #
