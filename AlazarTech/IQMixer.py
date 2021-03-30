@@ -67,34 +67,40 @@ class IQMixer(Instrument):
                            set_cmd = None) 
         
         self.add_parameter(name='S21_ampl',        
-                   label='S21 amplitude',
+                   label='Amplitude',
                            unit='V',
                    get_cmd =  self.get_S21ampl,     
                    set_cmd = None) 
 
         self.add_parameter(name='S21_phase',        
-                   label='S21 phase',
+                   label='Phase',
                            unit='rad',
                    get_cmd =  self.get_S21phase,     
                    set_cmd = None) 
         
         self.add_parameter(name='S21_I',        
-                   label='S21 I',
+                   label='I',
                            unit='V',
                    get_cmd =  self.get_S21I,     
                    set_cmd = None) 
 
 
         self.add_parameter(name='S21_Q',        
-                   label='S21 Q',
+                   label='Q',
                            unit='V',
                    get_cmd =  self.get_S21Q,     
                    set_cmd = None)
 
-        self.add_parameter(name='S21_dBm',
-                   label='S21 dBm',
+        self.add_parameter(name='P_dBm',
+                   label='ADC power',
                            unit='dBm',
-                   get_cmd =  self.get_S21dBm,
+                   get_cmd =  self.get_PdBm,
+                   set_cmd = None)
+
+        self.add_parameter(name='S21_dB',
+                   label='S21',
+                           unit='dB',
+                   get_cmd =  self.get_S21dB,
                    set_cmd = None)
 
         for io, ch in self.aeroflex_CH_map.items():
@@ -246,9 +252,15 @@ class IQMixer(Instrument):
         S21 = self.get_S21()
         return S21.ampl * np.cos( S21.phase )
 
-    def get_S21dBm( self ):
+    def get_PdBm( self ):
         S21 = self.get_S21()
         return 10*np.log(S21.ampl**2/50/1e-3)
+
+    def get_PdBm( self ):
+        P = self.get_PdBm()
+        P0 = float(self.sgen1.power.get())
+        return P - P0
+
 
 #    @contextmanager    
 #    def get_prepared_TD(self, N_windows,  windowsize = 512):
