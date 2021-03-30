@@ -89,7 +89,13 @@ class IQMixer(Instrument):
                    label='S21 Q',
                            unit='V',
                    get_cmd =  self.get_S21Q,     
-                   set_cmd = None) 
+                   set_cmd = None)
+
+        self.add_parameter(name='S21_dBm',
+                   label='S21 dBm',
+                           unit='dBm',
+                   get_cmd =  self.get_S21dBm,
+                   set_cmd = None)
 
         for io, ch in self.aeroflex_CH_map.items():
             self.add_parameter('att{}'.format(io),
@@ -226,7 +232,6 @@ class IQMixer(Instrument):
         return self.S21
     
     def get_S21ampl( self ):  
-
         return self.get_S21().ampl
 
     def get_S21phase(self ):  
@@ -234,15 +239,16 @@ class IQMixer(Instrument):
 
     def get_S21I( self ): 
         S21 = self.get_S21()
-
         return S21.ampl * np.sin( S21.phase )
 
     
     def get_S21Q( self ): 
-        
         S21 = self.get_S21()
-
         return S21.ampl * np.cos( S21.phase )
+
+    def get_S21dBm( self ):
+        S21 = self.get_S21()
+        return 10*np.log(S21.ampl**2/50/1e-3)
 
 #    @contextmanager    
 #    def get_prepared_TD(self, N_windows,  windowsize = 512):
