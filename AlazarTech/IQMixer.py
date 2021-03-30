@@ -256,7 +256,7 @@ class IQMixer(Instrument):
         S21 = self.get_S21()
         return 10*np.log(S21.ampl**2/50/1e-3)
 
-    def get_PdBm( self ):
+    def get_S21dB( self ):
         P = self.get_PdBm()
         P0 = float(self.sgen1.power.get())
         return P - P0
