@@ -112,7 +112,10 @@ class IQMixer(Instrument):
                            set_cmd= getattr(self.aeroflex,
                                             'attenuation{}'.format(ch)).set,     # 
                            vals=vals.Enum(*np.arange(0, 60.1, 2).tolist() ))
-
+    def get(self):
+        self.unit = 'connected'
+        return 0
+        
     def set_IQfrequency(self, fr):
         
         self.sgen1.frequency.set(fr)
@@ -126,13 +129,20 @@ class IQMixer(Instrument):
         
         N_pts = int(len(data)/2)
         
+        dataA = data[:N_pts]
+        dataB = data[N_pts:]
         print('avg data acquired')
-        f, ax = plt.subplots()
+        
         if ch == 'A':
-            ax.plot(data[:N_pts], 'x-')
+            f, ax = plt.subplots()
+            ax.plot(dataA, '.-')
         if ch == 'B':
-
-            ax.plot(data[N_pts:], 'x-')
+            f, ax = plt.subplots()
+            ax.plot(dataB, '.-')
+        if ch == 'AB':
+            f, axs = plt.subplots(2,1)
+            axs[0].plot(dataA, '.-')
+            axs[1].plot(dataB, '.-')
         return data
 
     def calc_IQ_verbose(self, data,  N_pts = None, N_w = 1):
