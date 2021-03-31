@@ -41,7 +41,7 @@ class Anritsu(VisaInstrument):
                            unit='dBm',
                            get_cmd='OL1',
                            set_cmd='XL1 {} DM',
-#                           get_parser=float,
+                          get_parser=float,
                            vals=Numbers(min_value=-999,
                                         max_value=20))
         self.add_parameter('mode',
