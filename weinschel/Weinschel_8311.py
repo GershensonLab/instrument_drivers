@@ -15,19 +15,19 @@ class Weinschel_8311(VisaInstrument):
         self.add_parameter('attenuationCH1', unit='dB',
                            set_cmd='CHAN 1;ATTN {};',
                            get_cmd='CHAN 1;ATTN?',
-                           vals=vals.Enum(*np.arange(0, 60.1, 2).tolist()),
+                           vals=vals.Enum(*np.arange(0, 100.1, 2).tolist()),
                            get_parser=float)
 
         self.add_parameter('attenuationCH2', unit='dB',
                            set_cmd='CHAN 2;ATTN {};',
                            get_cmd='CHAN 2;ATTN?',
-                           vals=vals.Enum(*np.arange(0, 60.1, 2).tolist()),
+                           vals=vals.Enum(*np.arange(0, 100.1, 2).tolist()),
                            get_parser=float)
 
         self.add_parameter('attenuationCH3', unit='dB',
                            set_cmd='CHAN 3;ATTN {};',
                            get_cmd='CHAN 3;ATTN?',
-                           vals=vals.Enum(*np.arange(0, 60.1, 2).tolist()),
+                           vals=vals.Enum(*np.arange(0, 100.1, 2).tolist()),
                            get_parser=float)
         
         

@@ -15,7 +15,7 @@ class Weinschel_8320(VisaInstrument):
         self.add_parameter('attenuation', unit='dB',
                            set_cmd='CHAN1;ATTN {};',
                            get_cmd='CHAN1;ATTN?',
-                           vals=vals.Enum(*np.arange(0, 60.1, 2).tolist()),
+                           vals=vals.Enum(*np.arange(0, 100.1, 2).tolist()),
                            get_parser=float)
 
         self.connect_message()
