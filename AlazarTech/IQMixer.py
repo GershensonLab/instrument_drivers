@@ -9,6 +9,7 @@ from contextlib import contextmanager
 from qcodes.instrument.base import Instrument
 from qcodes.utils.validators import Numbers
 import qcodes.utils.validators as vals
+from qcodes.instrument.parameter import MultiParameter
 import time
 
 #from .ATS import AlazarTech_ATS, Buffer
@@ -24,6 +25,43 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
+class IQPair(MultiParameter):
+    def __init__(self, name, instrument =None, iqmixer = None, **kwargs):
+        # only name, names, and shapes are required
+        # this version returns two scalars (shape = `()`)
+        super().__init__(name, 
+                         names=('I', 'Q'), shapes=((), ()),
+                         labels=('In phase amplitude', 'Quadrature amplitude'),
+                         units=('V', 'V'),
+                         setpoints=((), ()),
+                          docstring='param that returns two single values, I and Q')
+        self.iqmixer = iqmixer
+
+    def get_raw(self):
+        S21 = self.iqmixer.get_S21( )
+        ampl = S21.ampl
+        phase = S21.phase
+        return (ampl*np.sin(phase),
+                ampl*np.cos(phase))
+    
+    
+class AmPhPair(MultiParameter):
+    def __init__(self, name, instrument =None, iqmixer = None, **kwargs):
+        # only name, names, and shapes are required
+        # this version returns two scalars (shape = `()`)
+        super().__init__(name, 
+                         names=('Ampl', 'Phase'), shapes=((), ()),
+                         labels=('Amplitude', 'Phase'),
+                         units=('V', 'rad'),
+                         setpoints=((), ()),
+                          docstring='param that returns two single values, ampl and phase')
+        self.iqmixer = iqmixer
+
+    def get_raw(self):
+        S21 = self.iqmixer.get_S21( )
+        ampl = S21.ampl
+        phase = S21.phase
+        return (ampl,phase)    
 
 class IQMixer(Instrument):
     """
@@ -52,10 +90,19 @@ class IQMixer(Instrument):
         self.rangeCHA = self.ats.channel_range1.get()
         self.rangeCHB = self.ats.channel_range2.get()
 
+
+       
+
+        self.add_parameter(name='IQ', iqmixer = self ,     
+                                parameter_class=IQPair)
+
+        self.add_parameter(name='AmPh', iqmixer = self ,     
+                                parameter_class= AmPhPair)
+
         self.add_parameter(name='frequency',        
                            label='fprobe',
                            unit='Hz',
-                           get_cmd=None,     # get freq in MHz
+                           get_cmd = self.sgen1.frequency.get,     # get freq in MHz
                            set_cmd = self.set_IQfrequency , #set freq in range F1 in GHz
                            vals=Numbers(min_value=1e3,
                                         max_value=40e9))
@@ -111,7 +158,7 @@ class IQMixer(Instrument):
                                             'attenuation{}'.format(ch)).get,     # 
                            set_cmd= getattr(self.aeroflex,
                                             'attenuation{}'.format(ch)).set,     # 
-                           vals=vals.Enum(*np.arange(0, 60.1, 2).tolist() ))
+                           vals=vals.Enum(*np.arange(0, 100.1, 2).tolist() ))
     def get(self):
         self.unit = 'connected'
         return 0
@@ -123,7 +170,7 @@ class IQMixer(Instrument):
         time.sleep(0.05)
 
     
-    def plot_raw(self, ch = 'A'):
+    def plot_raw(self, ax = None, ch = 'A'):
         
         data = self.ats.get_averaged()
         
@@ -133,11 +180,15 @@ class IQMixer(Instrument):
         dataB = data[N_pts:]
         print('avg data acquired')
         
-        if ch == 'A':
+        
+        if ax is not None:
             f, ax = plt.subplots()
+            
+        if ch == 'A':
+            # f, ax = plt.subplots()
             ax.plot(dataA, '.-')
         if ch == 'B':
-            f, ax = plt.subplots()
+            # f, ax = plt.subplots()
             ax.plot(dataB, '.-')
         if ch == 'AB':
             f, axs = plt.subplots(2,1)
@@ -247,6 +298,14 @@ class IQMixer(Instrument):
 
         return self.S21
     
+    # def getIQ(self):
+    #     S21 = self.get_S21( )
+    #     ampl = S21.ampl
+    #     phase = S21.phase
+    #     return (ampl*np.sin(phase),
+    #             ampl*np.cos(phase))
+        
+    
     def get_S21ampl( self ):  
         return self.get_S21().ampl
 
@@ -264,12 +323,12 @@ class IQMixer(Instrument):
 
     def get_PdBm( self ):
         S21 = self.get_S21()
-        return 10*np.log(S21.ampl**2/50/1e-3)
+        return 10*np.log10(S21.ampl**2/50/1e-3)
 
     def get_S21dB( self ):
         P = self.get_PdBm()
         P0 = float(self.sgen1.power.get())
-        return P - P0
+        return P - P0 - self.attIn.get() - self.attOut.get()
 
 
 #    @contextmanager    
